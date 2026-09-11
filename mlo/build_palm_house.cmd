@@ -49,6 +49,8 @@ if errorlevel 1 exit /b 1
 echo [8/13] REFERENCE-FIRST FUSION FEAST REBUILD
 "D:\blender.exe" --background --python "D:\first Blender\mlo\scripts\fusion_feast_reference_rebuild.py"
 if errorlevel 1 exit /b 1
+"D:\blender.exe" --background --python "D:\first Blender\mlo\scripts\fusion_feast_validation_bridge.py"
+if errorlevel 1 exit /b 1
 "D:\blender.exe" --background --python "D:\first Blender\mlo\scripts\validate_mlo.py"
 if errorlevel 1 exit /b 1
 

@@ -24,12 +24,9 @@ jobs:
           if not exist "D:\blender.exe" exit /b 1
           "D:\blender.exe" --version
       - name: Patch Blender 5.2 engine compatibility
-        shell: powershell
+        shell: cmd
         run: |
-          $p='D:\first Blender\bridge\scripts\build_production.py'
-          $t=Get-Content -Raw -LiteralPath $p
-          $t=$t.Replace('BLENDER_EEVEE_NEXT','BLENDER_EEVEE')
-          Set-Content -LiteralPath $p -Value $t -Encoding UTF8
+          powershell.exe -NoProfile -ExecutionPolicy Bypass -Command "$p='D:\first Blender\bridge\scripts\build_production.py'; $t=Get-Content -Raw -LiteralPath $p; $t=$t.Replace('BLENDER_EEVEE_NEXT','BLENDER_EEVEE'); Set-Content -LiteralPath $p -Value $t -Encoding UTF8"
       - name: Run full 10 minute production
         shell: cmd
         run: |

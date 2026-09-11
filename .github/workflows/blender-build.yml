@@ -50,6 +50,7 @@ jobs:
       - name: Run full 10 minute production
         shell: cmd
         run: |
+          echo Automatic production retry after previous verification failure.
           if not exist "D:\first Blender\first blender.blend" exit /b 1
           if not exist "D:\first Blender\bridge\scripts\build_production.py" exit /b 1
           "D:\blender.exe" "D:\first Blender\first blender.blend" --background --python "D:\first Blender\bridge\scripts\build_production.py"

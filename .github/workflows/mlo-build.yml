@@ -1,0 +1,50 @@
+name: MLO Build
+
+on:
+  push:
+    branches: [mlo-production]
+    paths:
+      - 'mlo/**'
+      - '.github/workflows/mlo-build.yml'
+  workflow_dispatch:
+
+jobs:
+  build-mlo:
+    runs-on: [self-hosted, Windows, X64, mlo]
+    timeout-minutes: 120
+    steps:
+      - name: Checkout MLO branch
+        uses: actions/checkout@v4
+        with:
+          ref: mlo-production
+          fetch-depth: 1
+
+      - name: Verify Blender
+        shell: powershell
+        run: |
+          if (-not (Test-Path 'D:\blender.exe')) { throw 'Blender not found at D:\blender.exe' }
+          & 'D:\blender.exe' --version
+
+      - name: Build MLO
+        shell: cmd
+        run: call "D:\first Blender\mlo\build_mlo.cmd"
+
+      - name: Validate outputs
+        shell: powershell
+        run: |
+          $blend = 'D:\first Blender\mlo\output\Nocturne_Lounge_MLO.blend'
+          $preview = 'D:\first Blender\mlo\output\mlo_showcase.png'
+          if (-not (Test-Path $blend)) { throw "Missing $blend" }
+          if (-not (Test-Path $preview)) { throw "Missing $preview" }
+          Get-Item $blend, $preview | Select-Object FullName, Length, LastWriteTime
+
+      - name: Upload MLO checkpoint
+        uses: actions/upload-artifact@v4
+        with:
+          name: Nocturne-Lounge-MLO-${{ github.sha }}
+          path: |
+            D:\first Blender\mlo\output\Nocturne_Lounge_MLO.blend
+            D:\first Blender\mlo\output\mlo_showcase.png
+            D:\first Blender\mlo\output\mlo_manifest.json
+          if-no-files-found: error
+          retention-days: 14

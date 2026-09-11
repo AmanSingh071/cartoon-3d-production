@@ -4,70 +4,76 @@ cd /d "D:\first Blender"
 if not exist "D:\blender.exe" exit /b 1
 if not exist "D:\first Blender\mlo\output" mkdir "D:\first Blender\mlo\output"
 
-echo [1/12] BUILD BASE ARCHITECTURE
+echo [1/13] BUILD BASE ARCHITECTURE
 "D:\blender.exe" --background --python "D:\first Blender\mlo\scripts\build_mlo.py"
 if errorlevel 1 exit /b 1
 "D:\blender.exe" --background --python "D:\first Blender\mlo\scripts\validate_mlo.py"
 if errorlevel 1 exit /b 1
 
-echo [2/12] OPTIMIZE BASE
+echo [2/13] OPTIMIZE BASE
 "D:\blender.exe" --background --python "D:\first Blender\mlo\scripts\optimize_mlo.py"
 if errorlevel 1 exit /b 1
 "D:\blender.exe" --background --python "D:\first Blender\mlo\scripts\validate_mlo.py"
 if errorlevel 1 exit /b 1
 
-echo [3/12] EXISTING DETAIL
+echo [3/13] EXISTING DETAIL
 "D:\blender.exe" --background --python "D:\first Blender\mlo\scripts\enhance_mlo.py"
 if errorlevel 1 exit /b 1
 "D:\blender.exe" --background --python "D:\first Blender\mlo\scripts\validate_mlo.py"
 if errorlevel 1 exit /b 1
 
-echo [4/12] PREMIUM ARCHITECTURE
+echo [4/13] PREMIUM ARCHITECTURE
 "D:\blender.exe" --background --python "D:\first Blender\mlo\scripts\premium_detail_pass.py"
 if errorlevel 1 exit /b 1
 "D:\blender.exe" --background --python "D:\first Blender\mlo\scripts\validate_mlo.py"
 if errorlevel 1 exit /b 1
 
-echo [5/12] TWO-STORY EXPANSION
+echo [5/13] TWO-STORY EXPANSION
 "D:\blender.exe" --background --python "D:\first Blender\mlo\scripts\expansion_pass.py"
 if errorlevel 1 exit /b 1
 "D:\blender.exe" --background --python "D:\first Blender\mlo\scripts\validate_mlo.py"
 if errorlevel 1 exit /b 1
 
-echo [6/12] CURATED FREE HERO PROPS
+echo [6/13] CURATED FREE HERO PROPS
 "D:\blender.exe" --background --python "D:\first Blender\mlo\scripts\final_cafe_quality_pass.py"
 if errorlevel 1 exit /b 1
 "D:\blender.exe" --background --python "D:\first Blender\mlo\scripts\validate_mlo.py"
 if errorlevel 1 exit /b 1
 
-echo [7/12] ACCESS + ROOMS + LOCKABLE DOORS + SITTING
+echo [7/13] ACCESS + ROOMS + LOCKABLE DOORS + SITTING
 "D:\blender.exe" --background --python "D:\first Blender\mlo\scripts\usability_and_access_pass.py"
 if errorlevel 1 exit /b 1
 "D:\blender.exe" --background --python "D:\first Blender\mlo\scripts\validate_mlo.py"
 if errorlevel 1 exit /b 1
 
-echo [8/12] BASE COLOR + LIGHTING
+echo [8/13] BASE COLOR + LIGHTING
 "D:\blender.exe" --background --python "D:\first Blender\mlo\scripts\visual_pass.py"
 if errorlevel 1 exit /b 1
 "D:\blender.exe" --background --python "D:\first Blender\mlo\scripts\validate_mlo.py"
 if errorlevel 1 exit /b 1
 
-echo [9/12] PALM HOUSE RESTAURANT REDESIGN
+echo [9/13] PALM HOUSE REDESIGN BASE
 "D:\blender.exe" --background --python "D:\first Blender\mlo\scripts\palm_restaurant_quality_pass.py"
 if errorlevel 1 exit /b 1
 "D:\blender.exe" --background --python "D:\first Blender\mlo\scripts\validate_mlo.py"
 if errorlevel 1 exit /b 1
 
-echo [10/12] COLORFUL MATERIAL VIEWPORT
+echo [10/13] FUSION FEAST VIDEO REFERENCE RECREATION
+"D:\blender.exe" --background --python "D:\first Blender\mlo\scripts\fusion_feast_reference_pass.py"
+if errorlevel 1 exit /b 1
+"D:\blender.exe" --background --python "D:\first Blender\mlo\scripts\validate_mlo.py"
+if errorlevel 1 exit /b 1
+
+echo [11/13] COLORFUL MATERIAL VIEWPORT
 "D:\blender.exe" --background --python "D:\first Blender\mlo\scripts\viewport_setup.py"
 if errorlevel 1 exit /b 1
 "D:\blender.exe" --background --python "D:\first Blender\mlo\scripts\validate_mlo.py"
 if errorlevel 1 exit /b 1
 
-echo [11/12] OUTPUT CHECK
+echo [12/13] OUTPUT CHECK
 if not exist "D:\first Blender\mlo\output\Nocturne_Lounge_MLO.blend" exit /b 1
 if not exist "D:\first Blender\mlo\output\mlo_showcase.png" exit /b 1
 if not exist "D:\first Blender\mlo\output\mlo_manifest.json" exit /b 1
 
-echo [12/12] PALM HOUSE BUILD SUCCESS
+echo [13/13] FUSION FEAST REFERENCE BUILD SUCCESS
 exit /b 0

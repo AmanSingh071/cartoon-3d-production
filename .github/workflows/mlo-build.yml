@@ -10,9 +10,13 @@ on:
 
 jobs:
   build-mlo:
-    # Dedicated Windows Blender runner. Use the runner without label restrictions.
+    # Dedicated Windows Blender runner. Use only the built-in self-hosted label.
     runs-on: [self-hosted]
     timeout-minutes: 120
+    defaults:
+      run:
+        shell: cmd
+
     steps:
       - name: Checkout MLO branch
         uses: actions/checkout@v4
@@ -21,51 +25,56 @@ jobs:
           fetch-depth: 1
 
       - name: Sync production files to Blender workspace
-        shell: powershell -NoProfile -ExecutionPolicy Bypass -File {0}
         run: |
-          $src = Join-Path $env:GITHUB_WORKSPACE 'mlo'
-          $root = 'D:\first Blender\mlo'
-          if (-not (Test-Path $src)) { throw "Missing checked-out MLO source: $src" }
-          New-Item -ItemType Directory -Force -Path $root | Out-Null
-          robocopy $src $root /E /PURGE /R:2 /W:1 /NFL /NDL /NP
-          if ($LASTEXITCODE -ge 8) { throw "robocopy failed with exit code $LASTEXITCODE" }
-          if (-not (Test-Path "$root\scripts\build_mlo.py")) { throw 'build_mlo.py was not synced' }
-          if (-not (Test-Path "$root\build_mlo.cmd")) { throw 'build_mlo.cmd was not synced' }
+          @echo off
+          set "SRC=%GITHUB_WORKSPACE%\mlo"
+          set "ROOT=D:\first Blender\mlo"
+          if not exist "%SRC%\scripts\build_mlo.py" exit /b 1
+          if not exist "%SRC%\build_mlo.cmd" exit /b 1
+          if not exist "%ROOT%" mkdir "%ROOT%"
+          robocopy "%SRC%" "%ROOT%" /E /PURGE /R:2 /W:1 /NFL /NDL /NP
+          if errorlevel 8 exit /b %errorlevel%
+          if not exist "%ROOT%\scripts\build_mlo.py" exit /b 1
+          if not exist "%ROOT%\build_mlo.cmd" exit /b 1
 
       - name: Verify Blender
-        shell: powershell -NoProfile -ExecutionPolicy Bypass -File {0}
         run: |
-          if (-not (Test-Path 'D:\blender.exe')) { throw 'Blender not found at D:\blender.exe' }
-          & 'D:\blender.exe' --version
+          @echo off
+          if not exist "D:\blender.exe" (
+            echo Blender not found at D:\blender.exe
+            exit /b 1
+          )
+          "D:\blender.exe" --version
+          if errorlevel 1 exit /b 1
 
       - name: Clean previous MLO outputs
-        shell: powershell -NoProfile -ExecutionPolicy Bypass -File {0}
         run: |
-          $out = 'D:\first Blender\mlo\output'
-          New-Item -ItemType Directory -Force -Path $out | Out-Null
-          Remove-Item "$out\Nocturne_Lounge_MLO.blend", "$out\mlo_showcase.png", "$out\mlo_manifest.json" -Force -ErrorAction SilentlyContinue
+          @echo off
+          set "OUT=D:\first Blender\mlo\output"
+          if not exist "%OUT%" mkdir "%OUT%"
+          del /F /Q "%OUT%\Nocturne_Lounge_MLO.blend" 2>nul
+          del /F /Q "%OUT%\mlo_showcase.png" 2>nul
+          del /F /Q "%OUT%\mlo_manifest.json" 2>nul
 
       - name: Build MLO
-        shell: cmd
         run: call "D:\first Blender\mlo\build_mlo.cmd"
 
       - name: Validate actual MLO geometry
-        shell: cmd
-        run: "D:\blender.exe" --background --python "D:\first Blender\mlo\scripts\validate_mlo.py"
+        run: |
+          @echo off
+          "D:\blender.exe" --background --python "D:\first Blender\mlo\scripts\validate_mlo.py"
+          if errorlevel 1 exit /b 1
 
       - name: Validate outputs
-        shell: powershell -NoProfile -ExecutionPolicy Bypass -File {0}
         run: |
-          $blend = 'D:\first Blender\mlo\output\Nocturne_Lounge_MLO.blend'
-          $preview = 'D:\first Blender\mlo\output\mlo_showcase.png'
-          $manifest = 'D:\first Blender\mlo\output\mlo_manifest.json'
-          if (-not (Test-Path $blend)) { throw "Missing $blend" }
-          if (-not (Test-Path $preview)) { throw "Missing $preview" }
-          if (-not (Test-Path $manifest)) { throw "Missing $manifest" }
-          $meta = Get-Content $manifest -Raw | ConvertFrom-Json
-          if ($meta.validation.status -ne 'PASS') { throw 'Manifest validation did not pass' }
-          if ([int]$meta.validation.mesh_objects -lt 40) { throw 'Insufficient mesh geometry in final checkpoint' }
-          Get-Item $blend, $preview, $manifest | Select-Object FullName, Length, LastWriteTime
+          @echo off
+          set "OUT=D:\first Blender\mlo\output"
+          if not exist "%OUT%\Nocturne_Lounge_MLO.blend" exit /b 1
+          if not exist "%OUT%\mlo_showcase.png" exit /b 1
+          if not exist "%OUT%\mlo_manifest.json" exit /b 1
+          powershell.exe -NoProfile -ExecutionPolicy Bypass -Command "$m=Get-Content -Raw '%OUT%\mlo_manifest.json' | ConvertFrom-Json; if($m.validation.status -ne 'PASS'){exit 1}; if([int]$m.validation.mesh_objects -lt 40){exit 1}; Write-Host 'Manifest validation: PASS'; Write-Host ('Mesh objects: ' + $m.validation.mesh_objects)"
+          if errorlevel 1 exit /b 1
+          dir "%OUT%\Nocturne_Lounge_MLO.blend" "%OUT%\mlo_showcase.png" "%OUT%\mlo_manifest.json"
 
       - name: Upload MLO checkpoint
         uses: actions/upload-artifact@v4

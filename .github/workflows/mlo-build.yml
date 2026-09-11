@@ -29,16 +29,14 @@ jobs:
           set "SRC=%GITHUB_WORKSPACE%\mlo"
           set "ROOT=D:\first Blender\mlo"
           if not exist "%SRC%\scripts\build_mlo.py" exit /b 1
-          if not exist "%SRC%\build_mlo.cmd" exit /b 1
+          if not exist "%SRC%\build_palm_house.cmd" exit /b 1
           if not exist "%ROOT%" mkdir "%ROOT%"
-          rem Keep generated output outside source sync/purge.
           robocopy "%SRC%" "%ROOT%" /E /PURGE /XD "%ROOT%\output" /R:2 /W:1 /NFL /NDL /NP
           set "RC=%ERRORLEVEL%"
           echo Robocopy exit code: %RC%
-          rem Robocopy codes 0-7 are non-fatal; 8+ is a real failure.
           if %RC% GEQ 8 exit /b 1
           if not exist "%ROOT%\scripts\build_mlo.py" exit /b 1
-          if not exist "%ROOT%\build_mlo.cmd" exit /b 1
+          if not exist "%ROOT%\build_palm_house.cmd" exit /b 1
           exit /b 0
 
       - name: Verify Blender
@@ -62,8 +60,8 @@ jobs:
           del /F /Q "%OUT%\mlo_manifest.json" 2>nul
           exit /b 0
 
-      - name: Build MLO
-        run: call "D:\first Blender\mlo\build_mlo.cmd"
+      - name: Build Palm House MLO
+        run: call "D:\first Blender\mlo\build_palm_house.cmd"
 
       - name: Validate actual MLO geometry
         run: |
@@ -84,10 +82,10 @@ jobs:
           dir "%OUT%\Nocturne_Lounge_MLO.blend" "%OUT%\mlo_showcase.png" "%OUT%\mlo_manifest.json"
           exit /b 0
 
-      - name: Upload MLO checkpoint
+      - name: Upload Palm House checkpoint
         uses: actions/upload-artifact@v4
         with:
-          name: Nocturne-Lounge-MLO-${{ github.sha }}
+          name: Palm-House-MLO-${{ github.sha }}
           path: |
             D:\first Blender\mlo\output\Nocturne_Lounge_MLO.blend
             D:\first Blender\mlo\output\mlo_showcase.png

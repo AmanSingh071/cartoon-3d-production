@@ -1,4 +1,4 @@
-import os, subprocess
+import os, subprocess, shutil
 PROJECT=r'D:\first Blender'
 SCRIPT=os.path.join(PROJECT,'bridge','scripts','build_production.py')
 text=open(SCRIPT,'r',encoding='utf-8').read()
@@ -14,7 +14,11 @@ new_block=r'''def speak(text,path,rate):
             c=edge_tts.Communicate(text,voice,rate='-4%' if voice.endswith('JennyNeural') else '+2%',pitch='+2Hz' if voice.endswith('AnaNeural') else '+0Hz',volume='+0%')
             await c.save(mp3)
         asyncio.run(gen())
-        subprocess.run(['ffmpeg','-y','-loglevel','error','-i',mp3,'-ar','48000','-ac','2',path],check=True)
+        ff=shutil.which('ffmpeg')
+        if not ff:
+            import imageio_ffmpeg
+            ff=imageio_ffmpeg.get_ffmpeg_exe()
+        subprocess.run([ff,'-y','-loglevel','error','-i',mp3,'-ar','48000','-ac','2',path],check=True)
     except Exception as e:
         print('NEURAL TTS ERROR:',repr(e))
         safe=text.replace("'","''"); pp=path.replace("'","''")

@@ -67,5 +67,50 @@ for o in parts:
             o.rotation_euler.y=0; o.keyframe_insert(data_path='rotation_euler',index=1,frame=f+40)
 '''
 text=text.replace(marker,anim+'\n'+marker)
+# Replace the unreliable MASTER scene-strip movie render with a direct 3D render,
+# then mux the already-generated neural dialogue and music using FFmpeg.
+tail_marker='bpy.context.window.scene=master'
+tail_start=text.index(tail_marker)
+tail=r'''bpy.context.window.scene=scene
+video_only=os.path.join(OUT,'Milo_and_the_Moonflower_VIDEO.mp4')
+scene.render.use_sequencer=False
+scene.render.filepath=video_only
+scene.render.image_settings.media_type='VIDEO'
+scene.render.image_settings.file_format='FFMPEG'
+scene.render.ffmpeg.format='MPEG4'; scene.render.ffmpeg.codec='H264'; scene.render.ffmpeg.constant_rate_factor='HIGH'
+scene.render.ffmpeg.audio_codec='AAC'; scene.render.ffmpeg.audio_bitrate=192
+bpy.ops.wm.save_as_mainfile(filepath=os.path.join(OUT,'Milo_and_the_Moonflower_FINAL.blend'))
+print('DIRECT 3D RENDER START:',video_only)
+bpy.ops.render.render(animation=True)
+if not os.path.exists(video_only) or os.path.getsize(video_only)<100000:
+    raise RuntimeError('Direct 3D render did not produce a valid movie')
+# Resolve an FFmpeg executable, preferring the system one and falling back to imageio-ffmpeg.
+ff=shutil.which('ffmpeg')
+if not ff:
+    import imageio_ffmpeg
+    ff=imageio_ffmpeg.get_ffmpeg_exe()
+final=os.path.join(OUT,'Milo_and_the_Moonflower_FINAL.mp4')
+inputs=[music]
+for i,(sec,role,line) in enumerate(lines):
+    p=os.path.join(AUDIO,'line_%02d.wav'%i)
+    if os.path.exists(p): inputs.append(p)
+args=[ff,'-y','-loglevel','error','-i',video_only]
+for p in inputs: args += ['-i',p]
+filters=['[1:a]volume=0.45[music]']
+for j,(sec,role,line) in enumerate(lines):
+    p=os.path.join(AUDIO,'line_%02d.wav'%j)
+    if os.path.exists(p):
+        idx=inputs.index(p)+1; d=int(sec*1000)
+        filters.append('[%d:a]adelay=%d|%d,volume=1.0[v%d]'%(idx,d,d,j))
+streams=['[music]']+[('[v%d]'%j) for j,(sec,role,line) in enumerate(lines) if os.path.exists(os.path.join(AUDIO,'line_%02d.wav'%j))]
+filters.append(''.join(streams)+'amix=inputs=%d:duration=longest:normalize=1[aout]'%len(streams))
+args += ['-filter_complex',';'.join(filters),'-map','0:v:0','-map','[aout]','-c:v','copy','-c:a','aac','-b:a','192k','-shortest',final]
+print('FINAL AUDIO MUX START:',final)
+subprocess.run(args,check=True)
+if not os.path.exists(final) or os.path.getsize(final)<100000:
+    raise RuntimeError('Final movie mux failed')
+print('FULL PRODUCTION COMPLETE:',final)
+'''
+text=text[:tail_start]+tail
 open(SCRIPT,'w',encoding='utf-8').write(text)
-print('PRODUCTION OVERRIDES APPLIED: neural female narration + enhanced animation')
+print('PRODUCTION OVERRIDES APPLIED: neural female narration + richer animation + direct 3D render/mux')

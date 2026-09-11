@@ -23,6 +23,16 @@ jobs:
         run: |
           if not exist "D:\blender.exe" exit /b 1
           "D:\blender.exe" --version
+      - name: Install neural TTS dependencies
+        shell: cmd
+        run: |
+          if not exist "D:\first Blender\bridge\python_packages" mkdir "D:\first Blender\bridge\python_packages"
+          py -m pip install --disable-pip-version-check --upgrade --target "D:\first Blender\bridge\python_packages" edge-tts imageio-ffmpeg
+      - name: Apply quality production overrides
+        shell: cmd
+        run: |
+          if not exist "D:\first Blender\bridge\scripts\production_overrides.py" exit /b 1
+          "D:\blender.exe" --background --python "D:\first Blender\bridge\scripts\production_overrides.py"
       - name: Patch Blender 5.2 production settings
         shell: cmd
         run: |
@@ -48,6 +58,7 @@ jobs:
             D:\first Blender\bridge\output\Milo_and_the_Moonflower_FINAL.mp4
             D:\first Blender\bridge\output\Milo_and_the_Moonflower_FINAL.blend
             D:\first Blender\bridge\audio\*.wav
+            D:\first Blender\bridge\audio\*.mp3
             D:\first Blender\bridge\logs\*.log
           if-no-files-found: warn
           retention-days: 30

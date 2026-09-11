@@ -1,0 +1,19 @@
+# Blender temporary files
+*.blend1
+*.blend2
+*.blend3
+*.blend4
+*.blend5
+
+# Blender cache
+/cache/
+/Cache/
+/tmp/
+
+# Render outputs
+/renders/
+/render/
+
+# OS files
+Thumbs.db
+.DS_Store

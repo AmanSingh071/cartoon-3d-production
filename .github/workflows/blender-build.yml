@@ -23,10 +23,10 @@ jobs:
         run: |
           if not exist "D:\blender.exe" exit /b 1
           "D:\blender.exe" --version
-      - name: Patch Blender 5.2 engine compatibility
+      - name: Patch Blender 5.2 production settings
         shell: cmd
         run: |
-          powershell.exe -NoProfile -ExecutionPolicy Bypass -Command "$p='D:\first Blender\bridge\scripts\build_production.py'; $t=Get-Content -Raw -LiteralPath $p; $t=$t.Replace('BLENDER_EEVEE_NEXT','BLENDER_EEVEE'); Set-Content -LiteralPath $p -Value $t -Encoding UTF8"
+          powershell.exe -NoProfile -ExecutionPolicy Bypass -Command "$p='D:\first Blender\bridge\scripts\build_production.py'; $t=Get-Content -Raw -LiteralPath $p; $t=$t.Replace('BLENDER_EEVEE_NEXT','BLENDER_EEVEE'); $t=$t.Replace(\"scene.render.image_settings.file_format='FFMPEG'\",\"scene.render.image_settings.media_type='VIDEO'; scene.render.image_settings.file_format='FFMPEG'\"); $t=$t.Replace(\"master.render.image_settings.file_format='FFMPEG'\",\"master.render.image_settings.media_type='VIDEO'; master.render.image_settings.file_format='FFMPEG'\"); Set-Content -LiteralPath $p -Value $t -Encoding UTF8"
       - name: Run full 10 minute production
         shell: cmd
         run: |

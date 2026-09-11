@@ -10,7 +10,7 @@ on:
 jobs:
   blender-build:
     runs-on: [self-hosted, Windows, X64, blender]
-    timeout-minutes: 30
+    timeout-minutes: 720
     steps:
       - name: Sync local Blender project
         shell: cmd
@@ -23,25 +23,27 @@ jobs:
         run: |
           if not exist "D:\blender.exe" exit /b 1
           "D:\blender.exe" --version
-      - name: Run hero quality build
+      - name: Run full 10 minute production
         shell: cmd
         run: |
           if not exist "D:\first Blender\first blender.blend" exit /b 1
-          if not exist "D:\first Blender\bridge\scripts\build_hero.py" exit /b 1
-          "D:\blender.exe" "D:\first Blender\first blender.blend" --background --python "D:\first Blender\bridge\scripts\build_hero.py"
-      - name: Verify hero preview
+          if not exist "D:\first Blender\bridge\scripts\build_production.py" exit /b 1
+          "D:\blender.exe" "D:\first Blender\first blender.blend" --background --python "D:\first Blender\bridge\scripts\build_production.py"
+      - name: Verify final movie
         shell: cmd
         run: |
-          if not exist "D:\first Blender\bridge\output\hero_quality.png" exit /b 1
-          dir "D:\first Blender\bridge\output\hero_quality.png"
-      - name: Upload hero preview
+          if not exist "D:\first Blender\bridge\output\Milo_and_the_Moonflower_FINAL.mp4" exit /b 1
+          dir "D:\first Blender\bridge\output\Milo_and_the_Moonflower_FINAL.mp4"
+          if not exist "D:\first Blender\bridge\output\Milo_and_the_Moonflower_FINAL.blend" exit /b 1
+      - name: Upload final production
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: hero-quality-preview
+          name: Milo-and-the-Moonflower-FINAL
           path: |
-            D:\first Blender\bridge\output\hero_quality.png
-            D:\first Blender\bridge\output\hero_quality.blend
+            D:\first Blender\bridge\output\Milo_and_the_Moonflower_FINAL.mp4
+            D:\first Blender\bridge\output\Milo_and_the_Moonflower_FINAL.blend
+            D:\first Blender\bridge\audio\*.wav
             D:\first Blender\bridge\logs\*.log
           if-no-files-found: warn
-          retention-days: 7
+          retention-days: 30

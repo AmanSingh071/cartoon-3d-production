@@ -27,7 +27,8 @@ jobs:
         shell: cmd
         run: |
           if not exist "D:\first Blender\bridge\python_packages" mkdir "D:\first Blender\bridge\python_packages"
-          py -m pip install --disable-pip-version-check --upgrade --target "D:\first Blender\bridge\python_packages" edge-tts imageio-ffmpeg
+          where py >nul 2>&1
+          if not errorlevel 1 (py -m pip install --disable-pip-version-check --upgrade --target "D:\first Blender\bridge\python_packages" edge-tts imageio-ffmpeg) else (python -m pip install --disable-pip-version-check --upgrade --target "D:\first Blender\bridge\python_packages" edge-tts imageio-ffmpeg)
       - name: Apply quality production overrides
         shell: cmd
         run: |

@@ -10,7 +10,10 @@ on:
 
 jobs:
   build-mlo:
-    runs-on: [self-hosted, Windows, X64, mlo]
+    # Use the dedicated MLO runner's custom label directly. This avoids an
+    # unnecessary failure to match default OS/architecture labels while still
+    # preventing the unrelated cartoon runner from taking the job.
+    runs-on: [self-hosted, mlo]
     timeout-minutes: 120
     steps:
       - name: Checkout MLO branch
@@ -26,7 +29,6 @@ jobs:
           $root = 'D:\first Blender\mlo'
           if (-not (Test-Path $src)) { throw "Missing checked-out MLO source: $src" }
           New-Item -ItemType Directory -Force -Path $root | Out-Null
-          # Do not depend on D:\first Blender being a Git checkout. The Actions checkout is authoritative.
           robocopy $src $root /E /PURGE /R:2 /W:1 /NFL /NDL /NP
           if ($LASTEXITCODE -ge 8) { throw "robocopy failed with exit code $LASTEXITCODE" }
           if (-not (Test-Path "$root\scripts\build_mlo.py")) { throw 'build_mlo.py was not synced' }

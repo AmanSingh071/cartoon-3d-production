@@ -19,24 +19,50 @@ jobs:
           ref: mlo-production
           fetch-depth: 1
 
+      - name: Sync local production workspace
+        shell: powershell
+        run: |
+          $root = 'D:\first Blender'
+          if (-not (Test-Path "$root\.git")) { throw "Production workspace is not a Git checkout: $root" }
+          Set-Location $root
+          git fetch origin mlo-production
+          git checkout mlo-production
+          git reset --hard origin/mlo-production
+          git clean -fd -- mlo
+
       - name: Verify Blender
         shell: powershell
         run: |
           if (-not (Test-Path 'D:\blender.exe')) { throw 'Blender not found at D:\blender.exe' }
           & 'D:\blender.exe' --version
 
+      - name: Clean previous MLO outputs
+        shell: powershell
+        run: |
+          $out = 'D:\first Blender\mlo\output'
+          New-Item -ItemType Directory -Force -Path $out | Out-Null
+          Remove-Item "$out\Nocturne_Lounge_MLO.blend", "$out\mlo_showcase.png", "$out\mlo_manifest.json" -Force -ErrorAction SilentlyContinue
+
       - name: Build MLO
         shell: cmd
         run: call "D:\first Blender\mlo\build_mlo.cmd"
+
+      - name: Validate actual MLO geometry
+        shell: cmd
+        run: "D:\blender.exe" --background --python "D:\first Blender\mlo\scripts\validate_mlo.py"
 
       - name: Validate outputs
         shell: powershell
         run: |
           $blend = 'D:\first Blender\mlo\output\Nocturne_Lounge_MLO.blend'
           $preview = 'D:\first Blender\mlo\output\mlo_showcase.png'
+          $manifest = 'D:\first Blender\mlo\output\mlo_manifest.json'
           if (-not (Test-Path $blend)) { throw "Missing $blend" }
           if (-not (Test-Path $preview)) { throw "Missing $preview" }
-          Get-Item $blend, $preview | Select-Object FullName, Length, LastWriteTime
+          if (-not (Test-Path $manifest)) { throw "Missing $manifest" }
+          $meta = Get-Content $manifest -Raw | ConvertFrom-Json
+          if ($meta.validation.status -ne 'PASS') { throw 'Manifest validation did not pass' }
+          Get-Item $blend, $preview, $manifest | Select-Object FullName, Length, LastWriteTime
 
       - name: Upload MLO checkpoint
         uses: actions/upload-artifact@v4

@@ -6,6 +6,12 @@ BLEND = os.path.join(OUT, 'Nocturne_Lounge_MLO.blend')
 PREVIEW = os.path.join(OUT, 'mlo_showcase.png')
 MANIFEST = os.path.join(OUT, 'mlo_manifest.json')
 
+if not os.path.exists(BLEND):
+    raise RuntimeError('enhance_mlo: missing base blend')
+
+# CRITICAL: this is a post-build pass. Always open the actual generated MLO.
+bpy.ops.wm.open_mainfile(filepath=BLEND)
+
 # This is a post-build detail/optimization pass. It intentionally reuses the
 # existing material library and low-segment primitives instead of adding many
 # unique materials or unnecessarily dense meshes.
@@ -32,10 +38,8 @@ cyan=getmat('Neon_Cyan'); magenta=getmat('Neon_Magenta'); gold=getmat('Gold')
 wood=getmat('Wood_Walnut'); fabric=getmat('Fabric_Charcoal'); trim=getmat('Trim_BrushedMetal')
 
 # ---------- premium wall treatment ----------
-# Repeated vertical fins create depth while remaining extremely cheap geometry.
 for x in (-5.4,-4.5,-3.6,-2.7,2.7,3.6,4.5,5.4):
     cube('FeatureWall_Fin',(x,9.82,2.15),(0.055,0.08,1.45),gold,0.01)
-# Framed panels behind the bar.
 for x in (8.2,9.8,11.4):
     cube('Bar_BackPanel',(x,2.12,2.55),(0.55,0.035,1.25),fabric,0.025)
     cube('Bar_PanelTrim',(x,2.07,2.55),(0.59,0.025,1.29),trim,0.012)
@@ -57,7 +61,6 @@ for x,y in [(-6,-4),(0,-4),(6,-4),(-6,4),(6,4)]:
     cyl('Pendant_Rod',(x,y,3.45),0.025,0.55,trim,12)
     cyl('Pendant_Cap',(x,y,3.12),0.14,0.06,gold,16)
 
-# ---------- optimization metadata ----------
 scene=bpy.context.scene
 scene['mlo_stage']='detail_pass_01'
 scene['optimization_targets']={
@@ -69,8 +72,6 @@ scene['optimization_targets']={
     'texture_strategy': 'shared atlases/material reuse before unique textures'
 }
 
-# Keep render settings appropriate for a preview; actual FiveM assets should be
-# exported through the planned Sollumz/CodeWalker pipeline.
 scene.render.filepath=PREVIEW
 bpy.ops.wm.save_as_mainfile(filepath=BLEND)
 bpy.ops.render.render(write_still=True)

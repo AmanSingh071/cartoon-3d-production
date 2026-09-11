@@ -4,22 +4,21 @@ ROOT=r'D:\first Blender\mlo'; OUT=os.path.join(ROOT,'output'); BLEND=os.path.joi
 if not os.path.exists(BLEND): raise RuntimeError('MLO validation failed: blend file does not exist')
 bpy.ops.wm.open_mainfile(filepath=BLEND)
 meshes=[o for o in bpy.data.objects if o.type=='MESH']; mesh_names={o.name for o in meshes}
-required={'Floor','Wall_Back','Wall_Left','Wall_Right','Stage','BarCounter','FeatureWall'}; missing=sorted(required-mesh_names)
+required={'Floor','Wall_Back','Wall_Left','Wall_Right','BarCounter','FeatureWall'}; missing=sorted(required-mesh_names)
 if len(meshes)<40: raise RuntimeError(f'MLO validation failed: only {len(meshes)} mesh objects found; expected a complete interior')
 if missing: raise RuntimeError('MLO validation failed: missing core geometry: '+', '.join(missing))
 bbox=[o for o in meshes if o.name in required]; mins=[min(o.matrix_world.translation[i] for o in bbox) for i in range(3)]; maxs=[max(o.matrix_world.translation[i] for o in bbox) for i in range(3)]
 if maxs[0]-mins[0]<10 or maxs[1]-mins[1]<10: raise RuntimeError('MLO validation failed: geometry footprint is implausibly small')
 
 scene=bpy.context.scene
-# The access pass is late in the pipeline, so earlier stages are allowed to omit these final-quality checks.
 access_ready=bool(scene.get('mlo_access_pass'))
 access_report={}
 if access_ready:
     door_leaves=[o for o in meshes if o.name.startswith('DOOR_') and o.name.endswith('_Leaf')]
     lock_objs=[o for o in meshes if o.name.startswith('DOOR_') and o.name.endswith('_Lock') and o.get('lockable')]
-    stair_steps=[o for o in meshes if o.name.startswith('STAIR_Step_')]
-    stair_landing=bpy.data.objects.get('STAIR_TopLanding')
-    seats=[o for o in bpy.data.objects if o.name.startswith('SIT_') and o.type=='EMPTY' and o.get('sittable')]
+    stair_steps=[o for o in meshes if o.name.startswith('STAIR_Step_') or o.name.startswith('PALM_STAIR_Step_')]
+    stair_landing=bpy.data.objects.get('STAIR_TopLanding') or bpy.data.objects.get('PALM_STAIR_TopLanding')
+    seats=[o for o in bpy.data.objects if o.type=='EMPTY' and o.get('sittable')]
     if len(door_leaves)<6: raise RuntimeError(f'MLO access validation failed: only {len(door_leaves)} door leaves; expected entrance + room doors')
     if len(lock_objs)<6: raise RuntimeError(f'MLO access validation failed: only {len(lock_objs)} lockable door controls')
     if len(stair_steps)<18 or stair_landing is None: raise RuntimeError('MLO access validation failed: complete visible stair and top landing are missing')

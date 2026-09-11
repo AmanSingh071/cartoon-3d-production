@@ -1,0 +1,63 @@
+name: Blender Production Build
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'bridge/scripts/**'
+      - '.github/workflows/blender-build.yml'
+
+jobs:
+  blender-build:
+    runs-on: [self-hosted, Windows, X64, blender]
+    timeout-minutes: 30
+
+    steps:
+      - name: Sync local Blender project
+        shell: cmd
+        run: |
+          cd /d "D:\first Blender"
+          git config --global --add safe.directory "D:\first Blender"
+          git pull --ff-only origin main
+
+      - name: Verify Blender
+        shell: cmd
+        run: |
+          if not exist "D:\blender.exe" (
+            echo Blender not found at D:\blender.exe
+            exit /b 1
+          )
+          "D:\blender.exe" --version
+
+      - name: Run Blender build
+        shell: cmd
+        run: |
+          if not exist "D:\first Blender\first blender.blend" (
+            echo Blender project not found.
+            exit /b 1
+          )
+          if not exist "D:\first Blender\bridge\scripts\build_detailed.py" (
+            echo Build script not found.
+            exit /b 1
+          )
+          "D:\blender.exe" "D:\first Blender\first blender.blend" --background --python "D:\first Blender\bridge\scripts\build_detailed.py"
+
+      - name: Verify preview
+        shell: cmd
+        run: |
+          if not exist "D:\first Blender\bridge\output\detailed_test.png" (
+            echo Preview render was not created.
+            exit /b 1
+          )
+          dir "D:\first Blender\bridge\output\detailed_test.png"
+
+      - name: Upload Blender preview
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: blender-preview
+          path: |
+            D:\first Blender\bridge\output\detailed_test.png
+            D:\first Blender\bridge\logs\*.log
+          if-no-files-found: warn
+          retention-days: 7

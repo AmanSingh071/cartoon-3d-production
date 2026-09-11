@@ -7,6 +7,10 @@ on:
       - 'bridge/scripts/**'
       - '.github/workflows/blender-build.yml'
 
+concurrency:
+  group: blender-production
+  cancel-in-progress: true
+
 jobs:
   blender-build:
     runs-on: [self-hosted, Windows, X64, blender]

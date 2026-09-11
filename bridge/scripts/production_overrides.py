@@ -11,6 +11,9 @@ new_block=r'''def speak(text,path,rate):
     voices={'NARRATOR':'en-US-JennyNeural','MILO':'en-US-AnaNeural','PIP':'en-US-AnaNeural'}
     voice=voices.get(rate,'en-US-JennyNeural')
     try:
+        import sys
+        pkg=r'D:\first Blender\bridge\python_packages'
+        if os.path.isdir(pkg) and pkg not in sys.path: sys.path.insert(0,pkg)
         import edge_tts, asyncio
         async def gen():
             c=edge_tts.Communicate(text,voice,rate='-4%' if voice.endswith('JennyNeural') else '+2%',pitch='+2Hz' if voice.endswith('AnaNeural') else '+0Hz',volume='+0%')

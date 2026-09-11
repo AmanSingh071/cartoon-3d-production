@@ -19,16 +19,18 @@ jobs:
           ref: mlo-production
           fetch-depth: 1
 
-      - name: Sync local production workspace
+      - name: Sync production files to Blender workspace
         shell: powershell
         run: |
-          $root = 'D:\first Blender'
-          if (-not (Test-Path "$root\.git")) { throw "Production workspace is not a Git checkout: $root" }
-          Set-Location $root
-          git fetch origin mlo-production
-          git checkout mlo-production
-          git reset --hard origin/mlo-production
-          git clean -fd -- mlo
+          $src = Join-Path $env:GITHUB_WORKSPACE 'mlo'
+          $root = 'D:\first Blender\mlo'
+          if (-not (Test-Path $src)) { throw "Missing checked-out MLO source: $src" }
+          New-Item -ItemType Directory -Force -Path $root | Out-Null
+          # Do not depend on D:\first Blender being a Git checkout. The Actions checkout is authoritative.
+          robocopy $src $root /E /PURGE /R:2 /W:1 /NFL /NDL /NP
+          if ($LASTEXITCODE -ge 8) { throw "robocopy failed with exit code $LASTEXITCODE" }
+          if (-not (Test-Path "$root\scripts\build_mlo.py")) { throw 'build_mlo.py was not synced' }
+          if (-not (Test-Path "$root\build_mlo.cmd")) { throw 'build_mlo.cmd was not synced' }
 
       - name: Verify Blender
         shell: powershell
@@ -62,6 +64,7 @@ jobs:
           if (-not (Test-Path $manifest)) { throw "Missing $manifest" }
           $meta = Get-Content $manifest -Raw | ConvertFrom-Json
           if ($meta.validation.status -ne 'PASS') { throw 'Manifest validation did not pass' }
+          if ([int]$meta.validation.mesh_objects -lt 40) { throw 'Insufficient mesh geometry in final checkpoint' }
           Get-Item $blend, $preview, $manifest | Select-Object FullName, Length, LastWriteTime
 
       - name: Upload MLO checkpoint

@@ -12,5 +12,8 @@ if not exist "D:\first Blender\mlo\output\Nocturne_Lounge_MLO.blend" exit /b 1
 if not exist "D:\first Blender\mlo\output\mlo_showcase.png" exit /b 1
 "D:\blender.exe" --background --python "D:\first Blender\mlo\scripts\optimize_mlo.py"
 if errorlevel 1 exit /b 1
+"D:\blender.exe" --background --python "D:\first Blender\mlo\scripts\enhance_mlo.py"
+if errorlevel 1 exit /b 1
 if not exist "D:\first Blender\mlo\output\Nocturne_Lounge_MLO.blend" exit /b 1
-echo MLO build and optimization complete.
+if not exist "D:\first Blender\mlo\output\mlo_showcase.png" exit /b 1
+echo MLO build, optimization, and enhancement complete.

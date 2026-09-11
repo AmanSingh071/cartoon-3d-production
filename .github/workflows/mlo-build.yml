@@ -10,10 +10,8 @@ on:
 
 jobs:
   build-mlo:
-    # Use the dedicated MLO runner's custom label directly. This avoids an
-    # unnecessary failure to match default OS/architecture labels while still
-    # preventing the unrelated cartoon runner from taking the job.
-    runs-on: [self-hosted, mlo]
+    # Dedicated MLO self-hosted runner.
+    runs-on: [self-hosted, Windows, X64, mlo]
     timeout-minutes: 120
     steps:
       - name: Checkout MLO branch

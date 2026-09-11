@@ -10,7 +10,7 @@ on:
 
 jobs:
   build-mlo:
-    # Dedicated Windows Blender runner. All default labels are intentionally omitted.
+    # Dedicated Windows Blender runner. Use the runner without label restrictions.
     runs-on: [self-hosted]
     timeout-minutes: 120
     steps:
@@ -21,7 +21,7 @@ jobs:
           fetch-depth: 1
 
       - name: Sync production files to Blender workspace
-        shell: powershell
+        shell: powershell -NoProfile -ExecutionPolicy Bypass -File {0}
         run: |
           $src = Join-Path $env:GITHUB_WORKSPACE 'mlo'
           $root = 'D:\first Blender\mlo'
@@ -33,13 +33,13 @@ jobs:
           if (-not (Test-Path "$root\build_mlo.cmd")) { throw 'build_mlo.cmd was not synced' }
 
       - name: Verify Blender
-        shell: powershell
+        shell: powershell -NoProfile -ExecutionPolicy Bypass -File {0}
         run: |
           if (-not (Test-Path 'D:\blender.exe')) { throw 'Blender not found at D:\blender.exe' }
           & 'D:\blender.exe' --version
 
       - name: Clean previous MLO outputs
-        shell: powershell
+        shell: powershell -NoProfile -ExecutionPolicy Bypass -File {0}
         run: |
           $out = 'D:\first Blender\mlo\output'
           New-Item -ItemType Directory -Force -Path $out | Out-Null
@@ -54,7 +54,7 @@ jobs:
         run: "D:\blender.exe" --background --python "D:\first Blender\mlo\scripts\validate_mlo.py"
 
       - name: Validate outputs
-        shell: powershell
+        shell: powershell -NoProfile -ExecutionPolicy Bypass -File {0}
         run: |
           $blend = 'D:\first Blender\mlo\output\Nocturne_Lounge_MLO.blend'
           $preview = 'D:\first Blender\mlo\output\mlo_showcase.png'

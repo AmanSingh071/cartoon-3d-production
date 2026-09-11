@@ -10,9 +10,8 @@ on:
 
 jobs:
   build-mlo:
-    # Use the repository's self-hosted runner directly; runner labels are
-    # verified separately and were not being matched by Actions scheduling.
-    runs-on: self-hosted
+    # Dedicated Windows Blender runner. All default labels are intentionally omitted.
+    runs-on: [self-hosted]
     timeout-minutes: 120
     steps:
       - name: Checkout MLO branch

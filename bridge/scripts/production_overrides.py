@@ -1,6 +1,8 @@
-import os, subprocess, shutil
+import os, subprocess, shutil, sys
 PROJECT=r'D:\first Blender'
 SCRIPT=os.path.join(PROJECT,'bridge','scripts','build_production.py')
+PKG=os.path.join(PROJECT,'bridge','python_packages')
+if os.path.isdir(PKG) and PKG not in sys.path: sys.path.insert(0,PKG)
 text=open(SCRIPT,'r',encoding='utf-8').read()
 start=text.index('def speak(text,path,rate):')
 end=text.index("for i,(sec,role,text) in enumerate(lines):", start)

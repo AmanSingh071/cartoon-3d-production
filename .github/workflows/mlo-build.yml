@@ -10,7 +10,6 @@ on:
 
 jobs:
   build-mlo:
-    # Dedicated Windows Blender runner. Use only the built-in self-hosted label.
     runs-on: [self-hosted]
     timeout-minutes: 120
     defaults:
@@ -32,13 +31,15 @@ jobs:
           if not exist "%SRC%\scripts\build_mlo.py" exit /b 1
           if not exist "%SRC%\build_mlo.cmd" exit /b 1
           if not exist "%ROOT%" mkdir "%ROOT%"
-          rem Never purge the generated output directory during source sync.
-          rem A user-open .blend can lock this directory on Windows (ERROR 32).
+          rem Keep generated output outside source sync/purge.
           robocopy "%SRC%" "%ROOT%" /E /PURGE /XD "%ROOT%\output" /R:2 /W:1 /NFL /NDL /NP
-          rem Robocopy uses 0-7 for successful/non-fatal outcomes; only 8+ is failure.
-          if errorlevel 8 exit /b 1
+          set "RC=%ERRORLEVEL%"
+          echo Robocopy exit code: %RC%
+          rem Robocopy codes 0-7 are non-fatal; 8+ is a real failure.
+          if %RC% GEQ 8 exit /b 1
           if not exist "%ROOT%\scripts\build_mlo.py" exit /b 1
           if not exist "%ROOT%\build_mlo.cmd" exit /b 1
+          exit /b 0
 
       - name: Verify Blender
         run: |
@@ -49,6 +50,7 @@ jobs:
           )
           "D:\blender.exe" --version
           if errorlevel 1 exit /b 1
+          exit /b 0
 
       - name: Clean previous MLO outputs
         run: |
@@ -58,6 +60,7 @@ jobs:
           del /F /Q "%OUT%\Nocturne_Lounge_MLO.blend" 2>nul
           del /F /Q "%OUT%\mlo_showcase.png" 2>nul
           del /F /Q "%OUT%\mlo_manifest.json" 2>nul
+          exit /b 0
 
       - name: Build MLO
         run: call "D:\first Blender\mlo\build_mlo.cmd"
@@ -67,6 +70,7 @@ jobs:
           @echo off
           "D:\blender.exe" --background --python "D:\first Blender\mlo\scripts\validate_mlo.py"
           if errorlevel 1 exit /b 1
+          exit /b 0
 
       - name: Validate outputs
         run: |
@@ -78,6 +82,7 @@ jobs:
           powershell.exe -NoProfile -ExecutionPolicy Bypass -Command "$m=Get-Content -Raw '%OUT%\mlo_manifest.json' | ConvertFrom-Json; if($m.validation.status -ne 'PASS'){exit 1}; if([int]$m.validation.mesh_objects -lt 40){exit 1}; Write-Host 'Manifest validation: PASS'; Write-Host ('Mesh objects: ' + $m.validation.mesh_objects)"
           if errorlevel 1 exit /b 1
           dir "%OUT%\Nocturne_Lounge_MLO.blend" "%OUT%\mlo_showcase.png" "%OUT%\mlo_manifest.json"
+          exit /b 0
 
       - name: Upload MLO checkpoint
         uses: actions/upload-artifact@v4

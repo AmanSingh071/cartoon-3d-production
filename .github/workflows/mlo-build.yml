@@ -10,8 +10,8 @@ on:
 
 jobs:
   build-mlo:
-    # Dedicated MLO self-hosted runner.
-    runs-on: [self-hosted, Windows, X64, mlo]
+    # Route to the known online Blender self-hosted runner.
+    runs-on: [self-hosted, Windows, X64, blender]
     timeout-minutes: 120
     steps:
       - name: Checkout MLO branch

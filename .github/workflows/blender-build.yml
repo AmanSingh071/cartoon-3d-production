@@ -26,7 +26,7 @@ jobs:
       - name: Patch Blender 5.2 production settings
         shell: cmd
         run: |
-          powershell.exe -NoProfile -ExecutionPolicy Bypass -Command "$p='D:\first Blender\bridge\scripts\build_production.py'; $t=Get-Content -Raw -LiteralPath $p; $t=$t.Replace('BLENDER_EEVEE_NEXT','BLENDER_EEVEE'); $t=$t.Replace(\"scene.render.image_settings.file_format='FFMPEG'\",\"scene.render.image_settings.media_type='VIDEO'; scene.render.image_settings.file_format='FFMPEG'\"); $t=$t.Replace(\"master.render.image_settings.file_format='FFMPEG'\",\"master.render.image_settings.media_type='VIDEO'; master.render.image_settings.file_format='FFMPEG'\"); Set-Content -LiteralPath $p -Value $t -Encoding UTF8"
+          powershell.exe -NoProfile -ExecutionPolicy Bypass -Command "$p='D:\first Blender\bridge\scripts\build_production.py'; $t=Get-Content -Raw -LiteralPath $p; $t=$t.Replace('BLENDER_EEVEE_NEXT','BLENDER_EEVEE'); $t=$t.Replace(\"scene.render.image_settings.file_format='FFMPEG'\",\"scene.render.image_settings.media_type='VIDEO'; scene.render.image_settings.file_format='FFMPEG'\"); $t=$t.Replace(\"master.render.image_settings.file_format='FFMPEG'\",\"master.render.image_settings.media_type='VIDEO'; master.render.image_settings.file_format='FFMPEG'\"); $t=[regex]::Replace($t,'if cam\\.animation_data:\\r?\\n\\s+for fc in cam\\.animation_data\\.action\\.fcurves:\\r?\\n\\s+for q in fc\\.keyframe_points:q\\.interpolation=''BEZIER''\\r?\\n',''); Set-Content -LiteralPath $p -Value $t -Encoding UTF8"
       - name: Run full 10 minute production
         shell: cmd
         run: |
